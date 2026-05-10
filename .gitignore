@@ -11,3 +11,24 @@ Desktop.ini
 # Temp
 *.tmp
 *.bak
+
+# Secrets — never commit
+.env
+
+# Service state — machine-specific, never commit
+services/**/.last-poll
+
+# Personal knowledge — gitignored, local only
+knowledge/inbox.md
+knowledge/logs/
+knowledge/todos.md
+knowledge/topics.md
+knowledge/decisions.md
+knowledge/patterns.md
+knowledge/contacts.md
+knowledge/workflows.md
+
+# Domain-specific knowledge (local per clone, not committed)
+# Use <file>.local.md for domain-specific content alongside any committed knowledge file.
+knowledge/**/*.local.md
+

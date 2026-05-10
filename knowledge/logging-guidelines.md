@@ -41,28 +41,67 @@ Each log entry is a markdown section:
 
 ---
 
-## Verbatim Message History
+## Full Session Transcript (Exchanges Log)
 
 **Location:** `knowledge/logs/messages/YYYY-MM-DD.md`
 
-The orchestrator must log **every user message verbatim** to enable future knowledge restructuring from raw source.
+The orchestrator must log **every exchange** — user message + assistant response + reasoning — to enable lossless knowledge reconstruction.
 
 ### Format:
 
 ```markdown
-### [HH:MM] User Message
+### [HH:MM] Exchange N
 
-> [exact user message, quoted]
+**User:**
+> [exact user message, verbatim — no paraphrasing]
 
-**Context:** [what task/topic this relates to]
-**Actions taken:** [one-line summary of response]
+**Pertev (reasoning):**
+[What I considered, alternatives weighed, why I chose this approach. Include uncertainty, tradeoffs, and any context I loaded.]
+
+**Pertev (response):**
+[Key points I communicated. Include decisions made, files created/modified, and what the user was told.]
 ```
 
 ### Rules:
-- Log the exact user input — no paraphrasing, no summarizing.
-- Include context so the message can be understood later without the full conversation.
-- This is the **lossless** record. Activity logs can be lossy; message logs cannot.
+- Log the **exact** user input — no paraphrasing, no summarizing.
+- Include the assistant's reasoning so the log can stand alone without the chat UI.
+- Log **every exchange** at the end of each response turn — no batching. Batching creates gaps that break rampdown detection and knowledge staging.
+- This is the **lossless** record. Activity logs can be lossy; exchange logs cannot.
 
 ### Periodic Export:
-- At the end of each session (when the user stops interacting), the orchestrator should prompt to export the full session transcript if any messages were not captured by real-time logging.
-- Use the VS Code session debug log as a backup source if needed.
+- At the end of each session, the orchestrator prompts to export the full session transcript.
+- Use the VS Code session debug log as a backup source if any exchanges were missed.
+
+---
+
+## Knowledge Staging and Consolidation
+
+### Purpose
+
+After sessions accumulate, the orchestrator (on request) extracts implicit knowledge from the logs and stages it for human review before writing to any knowledge document.
+
+### Staging Location
+
+`knowledge/staged-knowledge.md`
+
+### Workflow
+
+1. **Trigger:** User says "stage knowledge from logs" (or similar).
+2. **Extraction:** Delegate to `auditor` — reads logs, identifies implicit knowledge (preferences, patterns, decisions, recurring topics).
+3. **Staging:** `auditor` writes proposed entries to `knowledge/staged-knowledge.md` with proposed target document, category, and source reference.
+4. **Review:** User reads `staged-knowledge.md`, edits or deletes items, marks approved ones.
+5. **Consolidation:** User says "consolidate staged knowledge" → delegate to `knowledge-manager` → moves approved items to the correct knowledge files, clears them from staging.
+
+### Staged Knowledge Format
+
+```markdown
+## Pending Review
+
+### [YYYY-MM-DD] [Short title]
+- **Source:** knowledge/logs/YYYY-MM-DD.md
+- **Proposed target:** knowledge/patterns.md
+- **Proposed entry:**
+  > [exact text to add to the knowledge document]
+- **Status:** pending | approved | rejected
+```
+
