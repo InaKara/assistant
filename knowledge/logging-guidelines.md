@@ -1,6 +1,6 @@
 # Logging Guidelines
 
-All agents in the work-assistant ecosystem must log their activity to daily log files.
+All agents in the life-assistant ecosystem must log their activity to daily log files.
 
 ## Log Location
 

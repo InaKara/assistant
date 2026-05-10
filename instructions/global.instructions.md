@@ -1,13 +1,13 @@
 ---
 description: >-
-  Global rules for all agents in the work-assistant ecosystem.
+  Global rules for all agents in the life-assistant ecosystem.
   Covers logging, communication, autonomy, and knowledge management.
 applyTo: "**"
 ---
 
-# Work Assistant — Global Instructions
+# Life Assistant — Global Instructions
 
-These rules apply to **every agent** in the work-assistant ecosystem.
+These rules apply to **every agent** in the life-assistant ecosystem.
 
 ---
 

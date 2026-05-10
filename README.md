@@ -27,7 +27,7 @@ knowledge/
 ├── services-registry.md    — catalog of reusable microservices
 ├── patterns.md             — learned patterns and workflows
 ├── decisions.md            — key decisions and rationale
-├── work-topics.md          — active projects and domains
+├── topics.md               — active projects and domains
 ├── contacts.md             — key people and their roles
 ├── workflows.md            — standard workflows
 ├── logging-guidelines.md   — logging format and rules

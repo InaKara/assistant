@@ -1,13 +1,13 @@
 ---
 description: >-
-  Self-documentation of the work-assistant agent ecosystem. Describes architecture,
+  Self-documentation of the life-assistant agent ecosystem. Describes architecture,
   communication patterns, knowledge management, and extension points. Reference this
   skill to understand how the system works.
 ---
 
-# Work Assistant Ecosystem — System Guide
+# Life Assistant Ecosystem — System Guide
 
-This skill describes how the work-assistant agent ecosystem is structured and operates. Any agent can reference this to understand the system.
+This skill describes how the life-assistant agent ecosystem is structured and operates. Any agent can reference this to understand the system.
 
 ---
 
@@ -55,7 +55,7 @@ The orchestrator **never goes silent** — it always uses `vscode_askQuestions` 
 | Domain skills | `skills/<topic>/SKILL.md` | Reusable technical knowledge |
 | Patterns | `knowledge/patterns.md` | Learned workflows and habits |
 | Decisions | `knowledge/decisions.md` | Decision log with rationale |
-| Work topics | `knowledge/work-topics.md` | Active projects and domains |
+| Topics | `knowledge/topics.md` | Active projects and domains |
 | Contacts | `knowledge/contacts.md` | People and roles |
 | Workflows | `knowledge/workflows.md` | Standard procedures |
 
