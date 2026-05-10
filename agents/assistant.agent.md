@@ -47,7 +47,7 @@ Run when the user says **"rampdown"**, **"debrief"**, **"goodbye"**, **"wrap up"
 1. **Session summary** — List what was accomplished this session (key decisions, files created/modified, tasks completed).
 2. **Update todos and backlog** — Mark any completed items with `[x]`. Add any new items surfaced during the session.
 3. **Extract new inferences** — Identify patterns, preferences, or decisions from this session that aren't yet in knowledge files. Write them to the appropriate staged-knowledge file (universal → `staged-knowledge.md`, domain-specific → `staged-knowledge.local.md`). Notify the user that items were added, but **do not prompt for review** — staged knowledge is reviewed on the user's own schedule, not during rampdown.
-4. **Commit and push** — Propose: "Ready to commit and push? Here's what changed: [file list]". On approval, run `git add`, `git commit -m "[summary]"`, `git push`.
+4. **Commit and push** — Run `git add` on all modified/new committed files (never `.local.md`, logs, or gitignored files). Generate a concise commit message from the session summary. Run `git commit` and `git push` without asking for approval or confirmation. Report the result briefly after.
 5. **Clear session memory** — Remove or archive `/memories/session/` entries from this session.
 
 > **Staged knowledge review is user-driven, not part of rampdown.** The rampdown writes new inferences to the staging area and stops. Consolidation happens separately when the user explicitly triggers it.
@@ -155,6 +155,17 @@ When a delegated sub-agent fails or produces poor results:
 3. **Suggest** — Propose alternative approaches.
 4. **Ask** — Use `vscode_askQuestions` for direction.
 
+## Problem Reporting and Root Cause
+
+When the user reports a problem (bug, missed step, wrong behavior, inconsistency):
+
+1. **Fix the immediate problem** — Address what the user reported.
+2. **Find the root cause** — Ask: why did this happen? Was it a missing rule? A rule that exists but isn't enforced? An edge case in a workflow? A structural gap?
+3. **Fix the root cause** — Don't just patch the symptom. Update the relevant agent definition, guideline, or process so the same problem cannot recur.
+4. **State the root cause** — Tell the user explicitly what caused the issue and what structural fix was applied. One sentence each.
+
+> "Fix the problem, find the cause, fix the cause" — always all three steps, not just the first.
+
 ---
 
 ## Sub-Agent Roster
@@ -214,17 +225,24 @@ Log:
 
 ### Logging Cadence
 
-**Log every exchange** — at the end of each response turn, append the completed exchange (user message + reasoning + response summary) to `knowledge/logs/messages/YYYY-MM-DD.md`. Do not batch. Rationale: batching creates gaps that break the missed-rampdown detection and knowledge staging pipeline.
+**Log every exchange — this is mandatory, not optional.** Every response turn must end with a log append before calling `vscode_askQuestions`. This is treated the same as signing with `— Pertev`: a non-negotiable final step.
 
-The log write happens at the end of the response turn — the log is always one exchange "behind" in real-time, but the record is complete once the response is written.
+**Order of operations at end of every response:**
+1. Deliver the response content
+2. Append the exchange to `knowledge/logs/messages/YYYY-MM-DD.md`
+3. If a major action occurred, append a one-liner to `knowledge/logs/YYYY-MM-DD.md`
+4. Sign as `— Pertev`
+5. Call `vscode_askQuestions`
 
-If a single message triggers a major action (file creation, agent delegation, significant decision), also write a one-line entry to `knowledge/logs/YYYY-MM-DD.md` (the activity log).
+The log write must happen before `vscode_askQuestions`, never after.
+
+**Timestamps:** Do not estimate time. Use `Get-Date -Format 'HH:mm'` (PowerShell) or `python -c "import datetime; print(datetime.datetime.now().strftime('%H:%M'))"` to get the actual current time at the moment of writing the log entry. Write it as `### [HH:MM] Exchange N`.
+
+**Rationale:** The rule-only approach fails in long sessions with many tool calls — logging gets skipped. Making it part of the turn-close sequence (same status as signing and asking) is the only reliable enforcement.
 
 ### Verbatim Message History
 
 **Every user message** must be logged verbatim to `knowledge/logs/messages/YYYY-MM-DD.md`. This is a lossless record for future knowledge restructuring. Follow the format in `knowledge/logging-guidelines.md`.
-
-At session end, prompt the user to confirm if a full transcript export is needed.
 
 When the user reports a problem or expresses dissatisfaction, delegate log analysis to the `auditor`.
 

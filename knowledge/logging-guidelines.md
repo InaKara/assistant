@@ -65,12 +65,9 @@ The orchestrator must log **every exchange** — user message + assistant respon
 ### Rules:
 - Log the **exact** user input — no paraphrasing, no summarizing.
 - Include the assistant's reasoning so the log can stand alone without the chat UI.
-- Log **every exchange** at the end of each response turn — no batching. Batching creates gaps that break rampdown detection and knowledge staging.
+- Log **every exchange** as a mandatory step before calling `vscode_askQuestions` — same status as signing. Do not skip, do not batch.
+- **Timestamps:** Use `Get-Date -Format 'HH:mm'` or `python -c "import datetime; print(datetime.datetime.now().strftime('%H:%M'))"` to get the real time. Never estimate timestamps.
 - This is the **lossless** record. Activity logs can be lossy; exchange logs cannot.
-
-### Periodic Export:
-- At the end of each session, the orchestrator prompts to export the full session transcript.
-- Use the VS Code session debug log as a backup source if any exchanges were missed.
 
 ---
 
