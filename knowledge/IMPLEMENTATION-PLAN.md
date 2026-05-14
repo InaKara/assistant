@@ -1,0 +1,232 @@
+# Knowledge Base Implementation Plan
+
+> Session 2026-05-14. Based on deep-research-report.md analysis.
+> Status: Approved by user, implementation paused for review.
+
+---
+
+## Overview
+
+5-phase plan to structure processing, storing, and retrieving information in the knowledge base, informed by the deep research report on PKM best practices.
+
+**Phases 1-2 (Foundation) + Phases 3-5 (Enhancements)**
+
+---
+
+## Phase 1 — Information Architecture (Foundation)
+
+**Objective:** Define a clear taxonomy of knowledge entities and their lifecycle.
+
+### Deliverables
+
+1. **Create `knowledge/SCHEMA.md`** ✅ DONE
+   - Master reference for entity types, metadata fields, lifecycle
+   - Routing table: which entity type lives in which file
+   - Metadata schema per entity type
+   - Field definitions and defaults
+
+2. **Update `agents/knowledge-manager.agent.md`** ✅ DONE
+   - Replace taxonomy table with new 10-row routing table
+   - Add "Metadata Population" section with rules for:
+     - Always-populate fields
+     - Automatic `Expires` calculation (high → 18mo, medium → 9mo, low → 3mo)
+     - `Related:` link scanning at consolidation
+     - Backfill rules for existing entries
+
+### Impact
+
+- Clarity on what types of knowledge exist and where they live
+- Enables knowledge-manager to enforce consistent metadata
+- Foundation for PKM Improvements 1-3 (temporal decay, wikilinks, ADR migration)
+
+---
+
+## Phase 2 — Metadata Standard
+
+**Objective:** Standardize metadata fields across all knowledge entries.
+
+### Deliverables
+
+1. **Backfill existing entries in `knowledge/patterns.md`**
+   - Add fields to existing 7 pattern entries:
+     - `Type: pattern`
+     - `Status: active`
+     - `Created: YYYY-MM-DD` (estimated from `Source` field)
+     - `Expires: YYYY-MM-DD` (calculated from Created + 18mo for high confidence)
+   - Example transformation:
+     ```
+     OLD: *Consolidated: 2026-05-14 | Source: 2026-05-10 session | Confidence: high*
+     NEW: *Type: pattern | Status: active | Created: 2026-05-10 | Consolidated: 2026-05-14 | Source: 2026-05-10 session | Confidence: high | Expires: 2027-11-10*
+     ```
+
+2. **Backfill existing entries in `knowledge/decisions.md`**
+   - Add `Type: decision | Status: accepted` to each decision block
+   - Minimal backfill only (full ADR migration is PKM 3)
+   - Example:
+     ```
+     OLD: ## 2026-05-08 — Initial Architecture
+            - **Decision:** ...
+     NEW: *Type: decision | Status: accepted | Created: 2026-05-08*
+          ## 2026-05-08 — Initial Architecture
+            - **Decision:** ...
+     ```
+
+### Impact
+
+- All existing knowledge has baseline metadata
+- Ready for PKM Improvements 1-3
+- Enables future queries/filtering by metadata
+
+---
+
+## Phase 3 — PKM Improvement 1: Temporal Decay
+
+**Objective:** Implement automatic expiry flagging based on confidence + age.
+
+### Changes Required
+
+1. **Update `agents/assistant.agent.md` — Rampup sequence**
+   - Add step: grep `knowledge/patterns.md`, `knowledge/workflows.md` for `Expires: YYYY-MM-DD` where date ≤ today
+   - Surface at rampup: "⚠️ N entries need re-verification: [list]"
+   - Non-blocking — user can defer or review
+   - No auto-deletion
+
+2. **Test:**
+   - Create a test pattern with `Expires: today` and verify rampup surfaces it
+
+### Impact
+
+- Stale knowledge is automatically surfaced
+- User can refresh or deprecate on a schedule
+- Confidence levels drive review frequency
+
+---
+
+## Phase 4 — PKM Improvement 2: Wikilink Cross-References
+
+**Objective:** Add semantic links at consolidation time.
+
+### Changes Required
+
+1. **Update `agents/knowledge-manager.agent.md` — Consolidation procedure**
+   - Before writing consolidated entry to target file:
+     - Scan existing entries in target file
+     - Scan other knowledge files for semantically related entries
+     - For decisions: use anchor-level links (`[[decisions/0003-title#decision]]`)
+     - For patterns: use file-level links (`[[patterns]]`)
+     - Add `Related: [[file]] | [[file#anchor]]` line to new entry
+   - Implementation: simple semantic matching (keyword/title overlap) or delegate to AI
+
+2. **Example:**
+   ```
+   Entry: "Temporal decay metadata drives review cadence"
+   Scan finds: decision 0014 (TTL fields), pattern "missed rampdown detection"
+   Add: Related: [[decisions/0014-ttl-fields]] | [[patterns#missed-rampdown]]
+   ```
+
+### Impact
+
+- Knowledge graph is explicit and navigable
+- Obsidian can render graph view
+- AI retrieval can follow links
+
+---
+
+## Phase 5 — PKM Improvement 3: ADR Migration
+
+**Objective:** Migrate `decisions.md` flat log to per-file ADR format.
+
+### Changes Required
+
+1. **Create `knowledge/decisions/` directory**
+   - Migrate ~3-5 existing decisions to numbered files
+   - Filename format: `0001-decision-title.md`
+   - Each file includes frontmatter: Status, Created, Confidence, Supersedes, Superseded-by, Related
+
+2. **Create `knowledge/decisions/index.md`**
+   - Automated list of all decisions with status
+   - Generated by knowledge-manager when ADRs are created/updated
+
+3. **Update `agents/knowledge-manager.agent.md`**
+   - Decision consolidation now creates ADR files, not appends to decisions.md
+   - Auto-generates index.md
+
+4. **Update `agents/assistant.agent.md`**
+   - Context load reads `knowledge/decisions/index.md` instead of `decisions.md`
+
+### Impact
+
+- Decisions are independently versioned and linked
+- Supersession history is explicit
+- Easier to track decision evolution
+- Obsidian-compatible structure
+
+---
+
+## Phase 6 — Review Rhythm (Optional)
+
+**Objective:** Define explicit review processes.
+
+### Changes
+
+1. **Document in `knowledge/workflows.md`:**
+   - Weekly personal review: check expired entries, archive inactive projects
+   - Monthly team governance: review stale content, update access
+   
+2. **Add to rampup:** surface items flagged for review
+
+### Impact
+
+- Knowledge doesn't accumulate stale entries
+- Expiry + archive happen on schedule
+
+---
+
+## Backfill + Cleanup (All Phases)
+
+When editing any existing entry, upgrade its metadata to the current schema if fields are missing.
+
+---
+
+## Dependencies and Sequencing
+
+```
+Phase 1 (Taxonomy) → Phase 2 (Metadata backfill) → [Phases 3-5 in parallel]
+                                                  → Phase 3 (Temporal decay)
+                                                  → Phase 4 (Wikilinks)
+                                                  → Phase 5 (ADR migration)
+```
+
+Phase 1+2 are blockers. Phases 3-5 can overlap once metadata is in place.
+
+---
+
+## Current Status
+
+✅ Phase 1 **DONE**
+- SCHEMA.md created
+- knowledge-manager.agent.md updated with taxonomy + metadata rules
+
+⏸️ Phase 2 **PAUSED** — waiting for user confirmation
+- Backfill patterns.md
+- Backfill decisions.md
+
+⏳ Phase 3-6 **PENDING** — awaiting Phase 1+2 completion
+
+---
+
+## Decisions Made
+
+1. **Metadata inline format** — Keep metadata in italic comment line below entry title (not frontmatter for flat files) for readability and backward compatibility
+2. **Expires defaults** — high/medium/low → 18mo/9mo/3mo (from report recommendation)
+3. **Related links strategy** — Anchor-level for decisions, file-level for patterns (balance between specificity and noise)
+4. **No directory reorganization** — Keep flat structure; organize via metadata/taxonomy instead of folder nesting (per report's "don't start with elaborate hierarchy" lesson)
+
+---
+
+## Open Questions
+
+1. Should `Created` field be auto-calculated from `Source` or manually specified at staging?
+2. For Reference entries, should metadata be in table columns or separate inline line?
+3. When should Phase 3-5 start? After Phase 2 backfill completes, or staggered?
+4. Should Obsidian setup begin after Phase 4 (wikilinks) or Phase 5 (ADR)?
