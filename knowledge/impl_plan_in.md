@@ -19,13 +19,13 @@
 
 ### Deliverables
 
-1. **Create `knowledge/SCHEMA.md`**
+1. **Create `knowledge/SCHEMA.md`** ✅ DONE
    - Master reference for entity types, metadata fields, lifecycle
    - Routing table: which entity type lives in which file
    - Metadata schema per entity type
    - Field definitions and defaults
 
-2. **Update `agents/knowledge-manager.agent.md`**
+2. **Update `agents/knowledge-manager.agent.md`** ✅ DONE
    - Replace taxonomy table with new 10-row routing table
    - Add "Metadata Population" section with rules for:
      - Always-populate fields
@@ -203,11 +203,11 @@ Phase 1+2 are blockers. Phases 3-5 can overlap once metadata is in place.
 
 ## Current Status
 
-⏸️ Phase 1 **READY** — not yet implemented
-- SCHEMA.md to be created
-- knowledge-manager.agent.md to be updated with taxonomy + metadata rules
+✅ Phase 1 **DONE**
+- SCHEMA.md created
+- knowledge-manager.agent.md updated with taxonomy + metadata rules
 
-⏸️ Phase 2 **READY** — waiting for Phase 1
+⏸️ Phase 2 **PAUSED** — waiting for user confirmation
 - Backfill patterns.md
 - Backfill decisions.md
 

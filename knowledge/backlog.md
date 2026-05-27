@@ -16,6 +16,12 @@ Items to address in future sessions. Maintained by the assistant.
 
 - [ ] **PKM Improvement 3: Migrate decisions.md to per-file ADR format** — Replace `knowledge/decisions.md` (flat log) with `knowledge/decisions/` directory of numbered files. Each file: `0001-decision-title.md` with fields `Status: accepted | deprecated | superseded by [NNNN]`, `Created:`, `Supersedes:`, `Superseded by:`, plus Context / Decision / Consequences sections. When a decision changes: create a new ADR, update old one to `Status: superseded by [NNNN]`. `knowledge/decisions/index.md` is a generated list maintained by knowledge-manager. **Implementation:** (a) Create `knowledge/decisions/` and migrate ~3 existing entries. (b) Update `knowledge-manager.agent.md` to create ADR files (not append to decisions.md). (c) Update `assistant.agent.md` context-load to read `knowledge/decisions/index.md` instead of `decisions.md`. Note: implement after Improvement 2 (wikilinks) so new ADRs get cross-references from the start.
 
+- [ ] **Plan information storage and retrieval improvements** -- Generate a concrete implementation plan from PKM Improvement items 1-3, `knowledge/IMPLEMENTATION-PLAN.md`, and `knowledge/rippling-stirring-whistle.md`.
+
+- [ ] **Create raw input folder** -- Add a repo folder for raw plan or information inputs before they are processed into structured knowledge.
+
+- [ ] **Create deep research teaching/import agent or skill** -- Create an agent/skill that takes `deep_research.md` from `chatgpt.com` files as input, explains or teaches them back to me, and stores them in the knowledge repo.
+
 - [ ] **Define a git sync strategy** — How and when to sync this repo across multiple clones (work, personal). What gets committed (agents, skills, instructions), what stays gitignored (knowledge docs, logs, personal data). Branching strategy if clones diverge.
 
 - [ ] **Test adding services** — Stand up a first `service-architect`-managed microservice. Validate the end-to-end flow: design → define → deploy → invoke from an agent.
